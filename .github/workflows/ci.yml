@@ -1,3 +1,11 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:   # 👈 manual Run workflow button
+
 permissions:
   id-token: write
   contents: read
@@ -5,8 +13,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -14,11 +24,12 @@ jobs:
           role-to-assume: arn:aws:iam::446100759629:role/github-actions-eks-role
           aws-region: ap-south-1
 
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region ap-south-1 \
           | docker login --username AWS --password-stdin 446100759629.dkr.ecr.ap-south-1.amazonaws.com
 
-      - name: Verify AWS identity
-        run: aws sts get-caller-identity
 
